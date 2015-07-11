@@ -1,0 +1,7 @@
+#!/bin/sh
+file="system.img" 
+if [ -f "$file" ];then
+echo "rm old file,make new..."
+rm $file
+fi
+make_ext4fs -s -l 314572800 -a root -L linux $file root

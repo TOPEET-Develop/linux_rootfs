@@ -1,0 +1,15 @@
+#!/bin/sh
+
+echo -n Try to bring wlan0 interface up......>/dev/ttySAC2
+
+insmod /lib/firmware/ath6k/AR6003/hw2.1.1/cfg80211.ko
+insmod /lib/firmware/ath6k/AR6003/hw2.1.1/ath6kl_sdio.ko
+
+sleep 1
+
+wpa_supplicant -Dwext -iwlan0 -c /etc/wpa_supplicant.conf -dd >/var/wifi_log &
+
+sleep 15
+udhcpc_topeet -i wlan0 >/var/udhcpc_log &
+
+echo Done > /dev/ttySAC2

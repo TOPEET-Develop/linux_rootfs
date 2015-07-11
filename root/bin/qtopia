@@ -1,0 +1,80 @@
+#!/bin/sh
+export TSLIB_ROOT=/usr/local/tslib
+export TSLIB_TSDEVICE=/dev/input/event2
+export TSLIB_TSEVENTTYPE=input
+export TSLIB_CONFFILE=/usr/local/tslib/etc/ts.conf
+export TSLIB_PLUGINDIR=/usr/local/tslib/lib/ts
+export TSLIB_CALIBFILE=/etc/pointercal
+export TSLIB_PLUGINDIR=$TSLIB_ROOT/lib/ts
+export TSLIB_CONSOLEDEVICE=none
+export TSLIB_FBDEVICE=/dev/fb0
+
+export QWS_MOUSE_PROTO=Tslib:/dev/input/event2
+#export QWS_MOUSE_PROTO=TPanel:/dev/input/event1
+#export QWS_MOUSE_PROTO="Tslib:/dev/input/event1 MouseMan:/dev/input/mice"
+#export QWS_MOUSE_PROTO=MouseMan:/dev/input/mice
+export QWS_KEYBOARD="TTY:/dev/tty1"
+
+if [ -c /dev/input/event2 ]; then
+        export QWS_MOUSE_PROTO='TPanel:/dev/input/event2'
+        #if [ -e /etc/pointercal -a ! -s /etc/pointercal ] ; then
+	if [ -e /etc/pointercal ] ; then
+		fsize=$(/bin/ls -al /etc/pointercal | cut -d' ' -f 23)
+		echo $fsize
+		#if [ -s /etc/pointercal ]; then
+		if [ $fsize -ge "1" ]; then
+			echo "/etc/pointercal is exit"
+		else
+			echo "/etc/pointercal is empty"
+                	rm /etc/pointercal
+                	/usr/local/tslib/bin/ts_calibrate
+		fi
+	else
+		echo "/etc/pointercal not found"
+		/usr/local/tslib/bin/ts_calibrate
+        fi
+else
+        export QWS_MOUSE_PROTO="MouseMan:/dev/input/mice"
+        >/etc/pointercal
+fi
+
+#export QWS_MOUSE_PROTO='TPanel:/dev/input/event2'
+#/usr/local/tslib/bin/ts_calibrate
+
+export QTDIR=/opt/Qtopia
+export QPEDIR=/opt/Qtopia
+export PATH=$QTDIR/bin:$PATH
+export QT_PLUGIN_PATH=$QTDIR/plugins:$QTDIR/qt_plugins/
+export QT_QWS_FONTDIR=$QPEDIR/lib/fonts/
+export LD_LIBRARY_PATH=$QTDIR/plugins/qtopialmigrate/:$QTDIR/qt_plugins/imageformats/:$QTDIR/lib:/usr/local/tslib/lib:$LD_LIBRARY_PATH
+
+FB_SIZE=$(cat /sys/class/graphics/fb0/virtual_size)
+
+
+#export QWS_DISPLAY="LinuxFb:mmWidth76:mmHeight44:1"
+case "$FB_SIZE" in
+800,480)
+export QWS_DISPLAY="LinuxFb:mmWidth91:mmHeight53:1"
+;;
+480,272)
+export QWS_DISPLAY="LinuxFb:mmWidth76:mmHeight44:1"
+;;
+*)
+export QWS_DISPLAY="LinuxFb:mmWidth91:mmHeight53:1"
+;;
+esac
+
+
+export HOME=/root/
+
+if [ ! -e $HOME ]; then mkdir -p $HOME; fi
+if [ ! -e /usr/share ]; then mkdir /usr/share; fi
+if [ ! -e $HOME/Settings/Trolltech/qpe.conf ]; then
+    mkdir -p $HOME/Settings/Trolltech/
+    cp $QPEDIR/etc/default/qpe.conf $HOME/Settings/Trolltech/qpe.conf -f
+fi
+
+export LANG="en_US"
+
+exec $QPEDIR/bin/qpe 1>/dev/null 2>/dev/null
+

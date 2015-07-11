@@ -1,0 +1,71 @@
+#!/bin/sh
+
+
+export TSLIB_ROOT=/usr/local/tslib
+export TSLIB_TSDEVICE=/dev/input/event2
+export TSLIB_TSEVENTTYPE=input
+export TSLIB_CONFFILE=/usr/local/tslib/etc/ts.conf
+export TSLIB_PLUGINDIR=/usr/local/tslib/lib/ts
+export TSLIB_CALIBFILE=/etc/pointercal
+export TSLIB_PLUGINDIR=$TSLIB_ROOT/lib/ts
+export TSLIB_CONSOLEDEVICE=none
+export TSLIB_FBDEVICE=/dev/fb0
+export QTDIR=/opt/qt-4.7.1/
+
+
+export LD_LIBRARY_PATH=$QTDIR/plugins/qtopialmigrate/:$QTDIR/qt_plugins/imageformats/:$QTDIR/lib:/root/tslib/build/lib:$LD_LIBRARY_PATH
+export PATH=/bin:/sbin:/usr/bin/:/usr/sbin:/root/tslib/build/bin
+
+
+if [ -c /dev/input/event2 ]; then
+	export QWS_MOUSE_PROTO='Tslib:/dev/input/event2'
+        #if [ -e /etc/pointercal -a ! -s /etc/pointercal ] ; then
+	if [ -e /etc/pointercal ] ; then
+		fsize=$(/bin/ls -al /etc/pointercal | cut -d' ' -f 23)
+		echo $fsize
+		#if [ -s /etc/pointercal ]; then
+		if [ $fsize -ge "1" ]; then
+			echo "/etc/pointercal is exit"
+		else
+			echo "/etc/pointercal is empty"
+                	rm /etc/pointercal
+                	/usr/local/tslib/bin/ts_calibrate
+		fi
+	else
+		echo "/etc/pointercal not found"
+		/usr/local/tslib/bin/ts_calibrate
+        fi
+else
+        export QWS_MOUSE_PROTO="MouseMan:/dev/input/mice"
+        #>/etc/pointercal
+fi
+
+#export QWS_MOUSE_PROTO="Tslib:${TSLIB_TSDEVICE}"
+#/usr/local/tslib/bin/ts_calibrate
+
+#export QWS_KEYBOARD=TTY:/dev/tty1
+
+
+FB_SIZE=$(cat /sys/class/graphics/fb0/virtual_size)
+
+#export QWS_DISPLAY="LinuxFb:mmWidth76:mmHeight44:1"
+case "$FB_SIZE" in
+800,480)
+export QWS_DISPLAY="LinuxFb:mmWidth91:mmHeight53:1"
+;;
+480,272)
+export QWS_DISPLAY="LinuxFb:mmWidth76:mmHeight44:1"
+;;
+*)
+export QWS_DISPLAY="LinuxFb:mmWidth91:mmHeight53:1"
+;;
+esac
+#export QWS_DISPLAY=:1
+
+export QWS_DISPLAY=Transformed:Rot0
+
+export HOME=/root
+
+cd /opt/qt-4.7.1/demos/embedded/fluidlauncher
+./fluidlauncher -qws
+

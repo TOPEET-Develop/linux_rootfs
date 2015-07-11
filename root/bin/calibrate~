@@ -1,0 +1,30 @@
+#!/bin/sh
+
+export TSLIB_ROOT=/usr/local/tslib
+export TSLIB_TSDEVICE=/dev/input/event1
+export TSLIB_TSEVENTTYPE=H3600
+export TSLIB_CONFFILE=/usr/local/tslib/etc/ts.conf
+export TSLIB_PLUGINDIR=/usr/local/tslib/lib/ts
+export TSLIB_CALIBFILE=/etc/pointercal
+export TSLIB_PLUGINDIR=$TSLIB_ROOT/lib/ts
+export TSLIB_CONSOLEDEVICE=none
+export TSLIB_FBDEVICE=/dev/fb0
+
+#export QWS_MOUSE_PROTO=Tslib:/dev/input/event1
+#export QWS_MOUSE_PROTO=TPanel:/dev/input/event1
+#export QWS_MOUSE_PROTO="Tslib:/dev/input/event1 MouseMan:/dev/input/mice"
+#export QWS_MOUSE_PROTO=MouseMan:/dev/input/mice
+export QWS_KEYBOARD="TTY:/dev/tty1"
+
+if [ -c /dev/input/event1 ]; then
+
+        if [ -e /etc/pointercal -a ! -s /etc/pointercal ] ; then
+                rm /etc/pointercal
+        fi
+fi
+
+export PATH=$QTDIR/bin:$PATH
+export LD_LIBRARY_PATH=$QTDIR/plugins/qtopialmigrate/:$QTDIR/qt_plugins/imageformats/:$QTDIR/lib:/root/tslib/build/lib:$LD_LIBRARY_PATH
+
+exec /root/tslib/build/bin/ts_calibrate  1>/dev/null 2>/dev/null
+

@@ -1,0 +1,97 @@
+#! /bin/sh
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/topeet/bin:
+runlevel=S
+prevlevel=N
+umask 022
+export PATH runlevel prevlevel
+
+#
+#	Trap CTRL-C &c only in this shell so we can interrupt subprocesses.
+#
+trap ":" INT QUIT TSTP
+/bin/hostname iTOP-4412
+
+#/bin/mount -n -t proc none /proc
+#/bin/mount -n -t sysfs none /sys
+#/bin/mount -n -t usbfs none /proc/bus/usb
+#/bin/mount -t ramfs none /dev
+[ -e /proc/1 ]    || /bin/mount -n -t proc  none /proc
+[ -e /sys/class ] || /bin/mount -n -t sysfs none /sys
+[ -e /dev/tty ]   || /bin/mount    -t ramfs none /dev
+
+echo /sbin/mdev > /proc/sys/kernel/hotplug
+/sbin/mdev -s
+/bin/hotplug
+# mounting file system specified in /etc/fstab
+mkdir -p /dev/pts
+mkdir -p /dev/shm
+/bin/mount -n -t devpts none /dev/pts -o mode=0622
+/bin/mount -n -t tmpfs tmpfs /dev/shm
+/bin/mount -n -t ramfs none /tmp
+/bin/mount -n -t ramfs none /var
+mkdir -p /var/empty
+mkdir -p /var/log
+mkdir -p /var/log/boa
+mkdir -p /var/lock
+mkdir -p /var/run
+mkdir -p /var/tmp
+
+ln -sf /dev/ttyS2 /dev/tty2
+ln -sf /dev/ttyS2 /dev/tty3
+ln -sf /dev/ttyS2 /dev/tty4
+
+amixer cset numid=5 127
+amixer cset numid=6 1
+amixer cset numid=30 8,0
+amixer cset numid=40 1
+amixer cset numid=43 1
+amixer cset numid=47 1
+
+/sbin/hwclock -s -f /dev/rtc
+
+syslogd
+/etc/rc.d/init.d/netd start
+echo "                        " > /dev/ttySAC2
+echo "Starting networking..." > /dev/ttySAC2
+#sleep 1
+#/etc/rc.d/init.d/httpd start
+#echo "                        " > /dev/ttySAC2
+#echo "Starting web server..." > /dev/ttySAC2
+#sleep 1
+#/etc/rc.d/init.d/leds start
+#echo "                        " > /dev/ttySAC2
+#echo "Starting leds service..." > /dev/ttySAC2
+#echo "                        "
+#sleep 1
+
+echo "*************************************" > /dev/ttySAC2
+echo "     http://www.topeetboard.com      " > /dev/ttySAC2
+echo "*************************************" > /dev/ttySAC2
+
+sleep 2
+
+/etc/firmware/load_firmware
+
+#mkdir /mnt/disk
+#mount -t yaffs2 /dev/mtdblock3 /mnt/disk
+
+/sbin/ifconfig lo 127.0.0.1
+
+/etc/init.d/ifconfig-eth0
+
+####### #wifi setting #######
+#/etc/init.d/ath6kl
+#/etc/init.d/mt6620
+
+echo 0 > /proc/sys/kernel/hung_task_timeout_secs
+
+#echo "                                  " > /dev/ttySAC2
+#echo "Starting Qtopia, please waiting..." > /dev/ttySAC2
+#echo "                                  " > /dev/ttySAC2
+echo "Starting Qtopia4, please waiting..." > /dev/ttySAC2
+
+#/bin/qtopia &
+/bin/qt4 &
+
+#must run this shell
+/bin/sh
