@@ -1,0 +1,17 @@
+
+1 TVP5150的驱动文件适用于Linux系统，Android4.0,Android4.4.
+2 使用最新的驱动文件替换掉原始的驱动文件,驱动文件路径:  kernel/driver/media/video/tvp5150.c,tvp5150_reg.h，新增加 tvp5150-patch.h 文件；
+
+3 打开TVP5150编译选项：
+  make menuconfig  -> Device Drivers -> Multimedia support-> Video capture adapters-> Encoders,decoders.sensors and other helper chips->
+  Texas Instruments TVP5150 video decoder  
+
+4 关闭OV5640编译选项:
+  make menuconfig  -> Device Drivers -> Multimedia support-> Video capture adapters-> OmniVision OV5640 sensor support
+
+5 Linux系统用户请使用压缩包中的视频播放器YUVPlayer.exe播放camera 命令行程序录制的视频文件，播放时选择UYVY格式.
+  camera使用方法:   ./camera  /dev/video0   640x480,也可以改变录制的视频大小， ./camera回车，可以看到支持的视频格式大小.
+
+注：TVP5150驱动不可与OV5640驱动同时共存，请根据视频模块实际情况选择编译的驱动文件.
+    Android4.0，Android4.4用户不需要修改HAL层，只需要更新内核驱动文件即可使用TVP5150模块.
+
